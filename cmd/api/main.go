@@ -2,20 +2,31 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
-	"github.com/mansonxasthur/go-task-api/internal/domain/user"
+	handlers "github.com/mansonxasthur/go-task-api/internal/infrastructure/http"
 	"github.com/mansonxasthur/go-task-api/internal/infrastructure/repository"
-	commands "github.com/mansonxasthur/go-task-api/internal/usecase/commnds"
 )
 
-func main() {
-	u := &user.User{
-		Name:  "Manson",
-		Email: "mansonx13@gmail.com",
-	}
+type App struct {
+}
 
-	repo := repository.NewUserMemoryRepository()
-	command := commands.NewRegisterUserCommand(repo)
-	command.Execute(u.Name, u.Email)
-	fmt.Println(repo.Users)
+func main() {
+	app := &App{}
+
+	app.Run()
+}
+
+func (*App) Run() {
+	mux := http.NewServeMux()
+	// handling user requests
+	userRepo := repository.NewUserMemoryRepository()
+	userHandler := handlers.NewUserHandler(userRepo)
+	userHandler.Process(mux)
+
+	fmt.Println("Starting server on port 8080...")
+	err := http.ListenAndServe(":8080", mux)
+	if err != nil {
+		panic(err)
+	}
 }

@@ -12,25 +12,21 @@ type RegisterUserCommand struct {
 
 func NewRegisterUserCommand(repo user.Repository) *RegisterUserCommand {
 	return &RegisterUserCommand{
-		repo,
+		repo: repo,
 	}
 }
 
-func (c *RegisterUserCommand) Execute(name, email string) error {
-	if name == "" || email == "" {
-		return fmt.Errorf("name and email are required")
+func (c *RegisterUserCommand) Execute(name, email string) (*user.User, error) {
+	u, err := user.NewUser(name, email)
+	if err != nil {
+		return nil, fmt.Errorf("error creating user: %w", err)
 	}
 
-	u := user.User{
-		Name:  name,
-		Email: email,
-	}
-
-	err := c.repo.Create(&u)
+	err = c.repo.Create(u)
 
 	if err != nil {
-		return fmt.Errorf("error creating user: %w", err)
+		return nil, fmt.Errorf("error creating user: %w", err)
 	}
 
-	return nil
+	return u, nil
 }

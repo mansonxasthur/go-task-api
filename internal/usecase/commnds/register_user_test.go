@@ -13,7 +13,7 @@ func TestRegisterUserCommand_Success(t *testing.T) {
 	name := "Manson"
 	email := "mansonx13@gmail.com"
 
-	if err := command.Execute(name, email); err != nil {
+	if _, err := command.Execute(name, email); err != nil {
 		t.Errorf("error executing command: %v", err)
 	}
 
@@ -24,7 +24,7 @@ func TestRegisterUserCommand_Success(t *testing.T) {
 
 	u := repo.Users[1]
 
-	if u.Name != name || u.Email != email {
+	if u.Name != name || u.Email.Value != email {
 		t.Errorf("expected user name to be %s and email to be %s but got %s and %s", name, email, u.Name, u.Email)
 	}
 }
@@ -33,7 +33,7 @@ func TestRegisterUserCommand_Validation(t *testing.T) {
 	repo := repository.NewUserMemoryRepository()
 	command := NewRegisterUserCommand(repo)
 
-	if err := command.Execute("", ""); err == nil {
+	if _, err := command.Execute("", ""); err == nil {
 		t.Errorf("expected validation error but got nil")
 	}
 }
