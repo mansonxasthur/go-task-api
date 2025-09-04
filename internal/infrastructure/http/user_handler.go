@@ -1,21 +1,24 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
 	"github.com/mansonxasthur/go-task-api/internal/domain/user"
-	commands "github.com/mansonxasthur/go-task-api/internal/usecase/commnds"
+	commands "github.com/mansonxasthur/go-task-api/internal/usecase/commands"
 	"github.com/mansonxasthur/go-task-api/internal/usecase/queries"
 )
 
 type UserHandler struct {
 	repo user.Repository
+	ctx  context.Context
 }
 
-func NewUserHandler(repo user.Repository) *UserHandler {
+func NewUserHandler(ctx context.Context, repo user.Repository) *UserHandler {
 	return &UserHandler{
 		repo: repo,
+		ctx:  ctx,
 	}
 }
 

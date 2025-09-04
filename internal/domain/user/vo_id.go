@@ -1,5 +1,3 @@
 package user
 
-type Id struct {
-	Value int32
-}
+type Id int32

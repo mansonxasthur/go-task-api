@@ -1,12 +1,18 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 	"net/mail"
 	"regexp"
 )
 
 var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
+
+var (
+	ErrorEmailIsRequired    = errors.New(`email is required`)
+	ErrorInvalidEmailFormat = errors.New(`invalid email format`)
+)
 
 type Email struct {
 	Value string `json:"value"`
@@ -23,11 +29,11 @@ func NewEmail(value string) (*Email, error) {
 
 func validateEmail(v string) error {
 	if v == "" {
-		return fmt.Errorf("email is required")
+		return ErrorEmailIsRequired
 	}
 
 	if !emailRegex.MatchString(v) {
-		return fmt.Errorf("invalid email format")
+		return ErrorInvalidEmailFormat
 	}
 
 	_, err := mail.ParseAddress(v)

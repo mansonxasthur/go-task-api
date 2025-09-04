@@ -1,7 +1,7 @@
 package user
 
 import (
-	"fmt"
+	"errors"
 )
 
 type User struct {
@@ -10,14 +10,18 @@ type User struct {
 	Email Email
 }
 
+var (
+	ErrorNameIsRequired error = errors.New("name is required")
+)
+
 func NewUser(name, email string) (*User, error) {
 	if name == "" {
-		return nil, fmt.Errorf("name and email are required")
+		return nil, ErrorNameIsRequired
 	}
 
 	emailObj, err := NewEmail(email)
 	if err != nil {
-		return nil, fmt.Errorf("invalid email: %w", err)
+		return nil, err
 	}
 
 	return &User{
@@ -32,7 +36,7 @@ func (u *User) SetID(id Id) {
 
 func (u *User) ToResource() map[string]interface{} {
 	return map[string]interface{}{
-		"id":    u.ID.Value,
+		"id":    u.ID,
 		"name":  u.Name,
 		"email": u.Email.Value,
 	}
