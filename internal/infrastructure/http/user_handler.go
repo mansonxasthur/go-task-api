@@ -38,7 +38,7 @@ func (h *UserHandler) createUserHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	u, err := commands.NewRegisterUserCommand(h.repo).Execute(req.Name, req.Email)
+	u, err := commands.NewRegisterUserCommand(h.repo).Execute(h.ctx, req.Name, req.Email)
 
 	if err != nil {
 		ErrorResponse(w, err, http.StatusBadRequest)
@@ -49,7 +49,7 @@ func (h *UserHandler) createUserHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *UserHandler) getUsersHandler(w http.ResponseWriter, r *http.Request) {
-	users := queries.NewListUsersQuery(h.repo).Execute()
+	users := queries.NewListUsersQuery(h.repo).Execute(h.ctx)
 	var usersResource []map[string]interface{}
 	for _, u := range users {
 		usersResource = append(usersResource, u.ToResource())

@@ -1,6 +1,10 @@
 package queries
 
-import "github.com/mansonxasthur/go-task-api/internal/domain/user"
+import (
+	"context"
+
+	"github.com/mansonxasthur/go-task-api/internal/domain/user"
+)
 
 type ListUsersQuery struct {
 	repo user.Repository
@@ -12,6 +16,6 @@ func NewListUsersQuery(repo user.Repository) *ListUsersQuery {
 	}
 }
 
-func (q *ListUsersQuery) Execute() []*user.User {
-	return q.repo.All()
+func (q *ListUsersQuery) Execute(ctx context.Context) []*user.User {
+	return q.repo.All(ctx)
 }
