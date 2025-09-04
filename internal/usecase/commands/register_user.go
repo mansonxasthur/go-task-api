@@ -1,9 +1,18 @@
 package commands
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"log"
 
 	"github.com/mansonxasthur/go-task-api/internal/domain/user"
+	"github.com/mansonxasthur/go-task-api/internal/infrastructure/repository"
+	"github.com/mansonxasthur/go-task-api/pkg/helpers"
+)
+
+var (
+	ErrUserAlreadyExists = errors.New("user already exists")
 )
 
 type RegisterUserCommand struct {
@@ -16,17 +25,36 @@ func NewRegisterUserCommand(repo user.Repository) *RegisterUserCommand {
 	}
 }
 
-func (c *RegisterUserCommand) Execute(name, email string) (*user.User, error) {
+func (c *RegisterUserCommand) Execute(ctx context.Context, name, email string) (user.ID, error) {
+	email = helpers.NormalizeEmail(email)
 	u, err := user.NewUser(name, email)
 	if err != nil {
-		return nil, fmt.Errorf("error creating user: %w", err)
+		return 0, err
 	}
 
-	err = c.repo.Create(u)
+	existingUser, err := c.repo.FindByEmail(ctx, email)
+	if err != nil && !errors.Is(err, repository.ErrUserNotFound) {
+		return 0, errCreatingUser(err)
+	}
+
+	if existingUser != nil {
+		return 0, ErrUserAlreadyExists
+	}
+
+	id, err := c.repo.Create(ctx, u)
 
 	if err != nil {
-		return nil, fmt.Errorf("error creating user: %w", err)
+		return 0, errCreatingUser(err)
 	}
 
-	return u, nil
+	return id, nil
+}
+
+func logErrorCreatingUser(err error) {
+	log.Printf("error creating user: %v\n", err)
+}
+
+func errCreatingUser(err error) error {
+	logErrorCreatingUser(err)
+	return errors.New(fmt.Sprintf("error creating user: %v", err))
 }

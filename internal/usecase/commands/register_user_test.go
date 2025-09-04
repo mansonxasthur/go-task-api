@@ -1,9 +1,12 @@
 package commands
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"testing"
 
+	dom "github.com/mansonxasthur/go-task-api/internal/domain/user"
 	"github.com/mansonxasthur/go-task-api/internal/infrastructure/repository"
 )
 
@@ -26,13 +29,19 @@ func TestRegisterUserCommand_Success(t *testing.T) {
 
 	repo := repository.NewUserMemoryRepository()
 	command := NewRegisterUserCommand(repo)
+	ctx := context.Background()
 	var count int32
 
 	for i, u := range cases {
 		t.Run(fmt.Sprintf("case-%d", i), func(t *testing.T) {
-			user, err := command.Execute(u.Name, u.Email)
+			id, err := command.Execute(ctx, u.Name, u.Email)
 			if err != nil {
 				t.Errorf("error executing command: %v", err)
+			}
+
+			user, err := repo.FindByID(ctx, id)
+			if err != nil {
+				t.Errorf("error finding user: %v", err)
 			}
 
 			count++
@@ -42,7 +51,7 @@ func TestRegisterUserCommand_Success(t *testing.T) {
 				t.Errorf("expected %d user created but got %d", count, userCount)
 			}
 
-			foundUser, err := repo.FindByID(int32(user.ID))
+			foundUser, err := repo.FindByID(ctx, user.ID)
 			if err != nil {
 				t.Errorf("error finding user: %v", err)
 			}
@@ -57,8 +66,15 @@ func TestRegisterUserCommand_Success(t *testing.T) {
 func TestRegisterUserCommand_Validation(t *testing.T) {
 	repo := repository.NewUserMemoryRepository()
 	command := NewRegisterUserCommand(repo)
+	ctx := context.Background()
 
-	if _, err := command.Execute("", ""); err == nil {
+	_, err := command.Execute(ctx, "", "")
+	if err == nil {
 		t.Errorf("expected validation error but got nil")
+		return
+	}
+
+	if !errors.Is(err, dom.ErrorNameIsRequired) {
+		t.Errorf("expected error to be %v but got %v", dom.ErrorNameIsRequired, err)
 	}
 }

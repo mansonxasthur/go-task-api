@@ -15,7 +15,7 @@ var (
 )
 
 type Email struct {
-	Value string `json:"value"`
+	Value string
 }
 
 func NewEmail(value string) (*Email, error) {
@@ -42,4 +42,8 @@ func validateEmail(v string) error {
 	}
 
 	return nil
+}
+
+func (e *Email) String() string {
+	return e.Value
 }

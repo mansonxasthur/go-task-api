@@ -14,9 +14,7 @@ type App struct {
 }
 
 func main() {
-	app := &App{
-		ctx: context.Background(),
-	}
+	app := &App{}
 
 	app.Run()
 }
@@ -25,7 +23,7 @@ func (a *App) Run() {
 	mux := http.NewServeMux()
 	// handling user requests
 	userRepo := repository.NewUserMemoryRepository()
-	userHandler := handlers.NewUserHandler(a.ctx, userRepo)
+	userHandler := handlers.NewUserHandler(userRepo)
 	userHandler.Process(mux)
 
 	fmt.Println("Starting server on port 8080...")

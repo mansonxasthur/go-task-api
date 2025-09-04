@@ -1,51 +1,56 @@
 package repository
 
 import (
+	"context"
 	"errors"
 	"sync"
 
 	"github.com/mansonxasthur/go-task-api/internal/domain/user"
+	"github.com/mansonxasthur/go-task-api/pkg/helpers"
 )
 
 type UserMemoryRepository struct {
 	mu         sync.RWMutex
-	Users      map[int32]user.User
-	emailIndex map[string]int32
-	lastID     int32
+	Users      map[user.ID]user.User
+	emailIndex map[string]user.ID
+	lastID     user.ID
 }
 
 var (
-	ErrEmailAlreadyExists = errors.New("email already exists")
-	ErrUserNotFound       = errors.New("user not found")
+	ErrUserNotFound = errors.New("user not found")
 )
 
 func NewUserMemoryRepository() *UserMemoryRepository {
 	return &UserMemoryRepository{
-		Users:      make(map[int32]user.User),
-		emailIndex: make(map[string]int32),
+		Users:      make(map[user.ID]user.User),
+		emailIndex: make(map[string]user.ID),
 		lastID:     0,
 	}
 }
 
-func (r *UserMemoryRepository) Create(u *user.User) error {
+func (r *UserMemoryRepository) Create(ctx context.Context, u *user.User) (user.ID, error) {
+	if err := ctx.Err(); err != nil {
+		return 0, err
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if _, exists := r.emailIndex[u.Email.Value]; exists {
-		return ErrEmailAlreadyExists
-	}
-
 	id := r.lastID + 1
 
-	u.SetID(user.Id(id))
+	u.SetID(id)
 	r.emailIndex[u.Email.Value] = id
 	r.Users[id] = *u
 	r.lastID = id
 
-	return nil
+	return u.ID, nil
 }
 
-func (r *UserMemoryRepository) FindByID(id int32) (*user.User, error) {
+func (r *UserMemoryRepository) FindByID(ctx context.Context, id user.ID) (*user.User, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -57,21 +62,30 @@ func (r *UserMemoryRepository) FindByID(id int32) (*user.User, error) {
 	return &u, nil
 }
 
-func (r *UserMemoryRepository) FindByEmail(email string) (*user.User, error) {
+func (r *UserMemoryRepository) FindByEmail(ctx context.Context, email string) (*user.User, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	r.mu.RLock()
 	defer r.mu.RUnlock()
+	email = helpers.NormalizeEmail(email)
 	id, ok := r.emailIndex[email]
 	if !ok {
 		return nil, ErrUserNotFound
 	}
 
-	return r.FindByID(id)
+	return r.FindByID(ctx, id)
 }
 
-func (r *UserMemoryRepository) All() []*user.User {
+func (r *UserMemoryRepository) All(ctx context.Context) []*user.User {
+	if err := ctx.Err(); err != nil {
+		return []*user.User{}
+	}
+
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	
+
 	var users []*user.User
 
 	for _, u := range r.Users {
