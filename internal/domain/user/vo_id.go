@@ -1,3 +1,3 @@
 package user
 
-type Id int32
+type ID int32

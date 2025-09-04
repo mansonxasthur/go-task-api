@@ -2,10 +2,12 @@ package user
 
 import (
 	"errors"
+
+	"github.com/mansonxasthur/go-task-api/pkg/helpers"
 )
 
 type User struct {
-	ID    Id
+	ID    ID
 	Name  string
 	Email Email
 }
@@ -18,7 +20,7 @@ func NewUser(name, email string) (*User, error) {
 	if name == "" {
 		return nil, ErrorNameIsRequired
 	}
-
+	email = helpers.NormalizeEmail(email)
 	emailObj, err := NewEmail(email)
 	if err != nil {
 		return nil, err
@@ -30,7 +32,7 @@ func NewUser(name, email string) (*User, error) {
 	}, nil
 }
 
-func (u *User) SetID(id Id) {
+func (u *User) SetID(id ID) {
 	u.ID = id
 }
 
