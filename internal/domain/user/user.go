@@ -5,12 +5,17 @@ import (
 	"github.com/mansonxasthur/go-task-api/pkg/helpers"
 )
 
+// ID represents a user ID.
+type ID int32
+
+// User is the user domain entity.
 type User struct {
 	ID    ID
 	Name  string
 	Email Email
 }
 
+// NewUser creates a new user domain entity.
 func NewUser(name, email string) (*User, error) {
 	if name == "" {
 		return nil, errors.ErrorNameIsRequired
@@ -27,14 +32,7 @@ func NewUser(name, email string) (*User, error) {
 	}, nil
 }
 
+// SetID sets the user ID.
 func (u *User) SetID(id ID) {
 	u.ID = id
-}
-
-func (u *User) ToResource() map[string]interface{} {
-	return map[string]interface{}{
-		"id":    u.ID,
-		"name":  u.Name,
-		"email": u.Email.Value,
-	}
 }

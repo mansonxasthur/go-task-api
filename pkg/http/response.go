@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// ResponseBody is the response body.
 type ResponseBody struct {
 	Data  interface{} `json:"data"`
 	Error interface{} `json:"error"`
@@ -20,6 +21,7 @@ func SuccessResponse(w http.ResponseWriter, data interface{}, status int) {
 	writeResponse(w, body, status)
 }
 
+// ErrorResponse writes an error response to the response writer.
 func ErrorResponse(w http.ResponseWriter, err error, status int) {
 	body := ResponseBody{
 		Error: err.Error(),
@@ -27,6 +29,7 @@ func ErrorResponse(w http.ResponseWriter, err error, status int) {
 	writeResponse(w, body, status)
 }
 
+// writeResponse writes the response to the response writer.
 func writeResponse(w http.ResponseWriter, body ResponseBody, status int) {
 	w.Header().Set("Content-Type", "application/json")
 
