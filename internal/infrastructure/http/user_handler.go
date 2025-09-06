@@ -1,27 +1,29 @@
-package handlers
+package http
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
+	"github.com/mansonxasthur/go-task-api/internal/application"
+	domainErrors "github.com/mansonxasthur/go-task-api/internal/domain/errors"
 	"github.com/mansonxasthur/go-task-api/internal/domain/user"
-	"github.com/mansonxasthur/go-task-api/internal/usecase/commands"
-	"github.com/mansonxasthur/go-task-api/internal/usecase/queries"
+	httphelper "github.com/mansonxasthur/go-task-api/pkg/http"
 )
 
 type UserHandler struct {
-	repo user.Repository
+	userService *application.UserService
 }
 
-func NewUserHandler(repo user.Repository) *UserHandler {
+func NewUserHandler(s *application.UserService) *UserHandler {
 	return &UserHandler{
-		repo: repo,
+		userService: s,
 	}
 }
 
-func (h *UserHandler) Process(mux *http.ServeMux) {
+func (h *UserHandler) Handle(mux *http.ServeMux) {
 	mux.Handle("POST /users", http.HandlerFunc(h.createUserHandler))
-	mux.Handle("GET /users", http.HandlerFunc(h.getUsersHandler))
+	mux.Handle("GET /users", http.HandlerFunc(h.listUsersHandler))
 }
 
 func (h *UserHandler) createUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -31,26 +33,39 @@ func (h *UserHandler) createUserHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		ErrorResponse(w, err, http.StatusBadRequest)
+		httphelper.ErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
 
 	ctx := r.Context()
 
-	id, err := commands.NewRegisterUserCommand(h.repo).Execute(ctx, req.Name, req.Email)
-
+	id, err := h.userService.RegisterUser(ctx, req.Name, req.Email)
 	if err != nil {
-		ErrorResponse(w, err, http.StatusBadRequest)
+		status := h.mapErrorToStatusCode(err)
+		httphelper.ErrorResponse(w, err, status)
 		return
 	}
 
-	u, err := h.repo.FindByID(ctx, id)
+	u, err := h.userService.FindByID(ctx, id)
 
-	SuccessResponse(w, user.NewUserDtoFromEntity(u), http.StatusCreated)
+	httphelper.SuccessResponse(w, user.NewUserDtoFromEntity(u), http.StatusCreated)
 }
 
-func (h *UserHandler) getUsersHandler(w http.ResponseWriter, r *http.Request) {
-	users := queries.NewListUsersQuery(h.repo).Execute(r.Context())
+func (h *UserHandler) listUsersHandler(w http.ResponseWriter, r *http.Request) {
+	users := h.userService.ListUsers(r.Context())
 
-	SuccessResponse(w, user.NewUserDtoList(users), http.StatusOK)
+	httphelper.SuccessResponse(w, user.NewUserDtoList(users), http.StatusOK)
+}
+
+func (h *UserHandler) mapErrorToStatusCode(err error) int {
+	if errors.Is(err, domainErrors.ErrorNameIsRequired) {
+		return http.StatusBadRequest
+	}
+	if errors.Is(err, domainErrors.ErrUserAlreadyExists) {
+		return http.StatusConflict
+	}
+	if errors.Is(err, domainErrors.ErrUserNotFound) {
+		return http.StatusNotFound
+	}
+	return http.StatusInternalServerError
 }

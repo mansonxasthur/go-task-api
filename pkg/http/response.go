@@ -1,4 +1,4 @@
-package handlers
+package http
 
 import (
 	"bytes"
@@ -12,6 +12,7 @@ type ResponseBody struct {
 	Error interface{} `json:"error"`
 }
 
+// SuccessResponse writes a success response to the response writer.
 func SuccessResponse(w http.ResponseWriter, data interface{}, status int) {
 	body := ResponseBody{
 		Data: data,

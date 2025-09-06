@@ -1,8 +1,7 @@
 package user
 
 import (
-	"errors"
-
+	"github.com/mansonxasthur/go-task-api/internal/domain/errors"
 	"github.com/mansonxasthur/go-task-api/pkg/helpers"
 )
 
@@ -12,13 +11,9 @@ type User struct {
 	Email Email
 }
 
-var (
-	ErrorNameIsRequired error = errors.New("name is required")
-)
-
 func NewUser(name, email string) (*User, error) {
 	if name == "" {
-		return nil, ErrorNameIsRequired
+		return nil, errors.ErrorNameIsRequired
 	}
 	email = helpers.NormalizeEmail(email)
 	emailObj, err := NewEmail(email)
