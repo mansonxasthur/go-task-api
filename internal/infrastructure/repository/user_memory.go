@@ -2,9 +2,9 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"sync"
 
+	"github.com/mansonxasthur/go-task-api/internal/domain/errors"
 	"github.com/mansonxasthur/go-task-api/internal/domain/user"
 	"github.com/mansonxasthur/go-task-api/pkg/helpers"
 )
@@ -15,10 +15,6 @@ type UserMemoryRepository struct {
 	emailIndex map[string]user.ID
 	lastID     user.ID
 }
-
-var (
-	ErrUserNotFound = errors.New("user not found")
-)
 
 func NewUserMemoryRepository() *UserMemoryRepository {
 	return &UserMemoryRepository{
@@ -56,7 +52,7 @@ func (r *UserMemoryRepository) FindByID(ctx context.Context, id user.ID) (*user.
 
 	u, ok := r.Users[id]
 	if !ok {
-		return nil, ErrUserNotFound
+		return nil, errors.ErrUserNotFound
 	}
 
 	return &u, nil
@@ -72,7 +68,7 @@ func (r *UserMemoryRepository) FindByEmail(ctx context.Context, email string) (*
 	email = helpers.NormalizeEmail(email)
 	id, ok := r.emailIndex[email]
 	if !ok {
-		return nil, ErrUserNotFound
+		return nil, errors.ErrUserNotFound
 	}
 
 	return r.FindByID(ctx, id)

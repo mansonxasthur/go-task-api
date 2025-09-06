@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	dom "github.com/mansonxasthur/go-task-api/internal/domain/user"
+	domainerrors "github.com/mansonxasthur/go-task-api/internal/domain/errors"
 	"github.com/mansonxasthur/go-task-api/internal/infrastructure/repository"
 )
 
@@ -74,7 +74,7 @@ func TestRegisterUserCommand_Validation(t *testing.T) {
 		return
 	}
 
-	if !errors.Is(err, dom.ErrorNameIsRequired) {
-		t.Errorf("expected error to be %v but got %v", dom.ErrorNameIsRequired, err)
+	if !errors.Is(err, domainerrors.ErrorNameIsRequired) {
+		t.Errorf("expected error to be %v but got %v", domainerrors.ErrorNameIsRequired, err)
 	}
 }
