@@ -59,7 +59,6 @@ func TestSuccessResponse(t *testing.T) {
 			SuccessResponse(recorder, tt.data, tt.status)
 
 			res := recorder.Result()
-			defer res.Body.Close()
 
 			if res.StatusCode != tt.wantStatus {
 				t.Errorf("unexpected status code: got %d, want %d", res.StatusCode, tt.wantStatus)
@@ -88,6 +87,18 @@ func ExampleSuccessResponse() {
 	SuccessResponse(recorder, data, http.StatusOK)
 
 	// Output:
+}
+
+func BenchmarkSuccessResponse(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		recorder := httptest.NewRecorder()
+		data := map[string]interface{}{
+			"message": "Hello, World!",
+			"status":  "success",
+		}
+
+		SuccessResponse(recorder, data, http.StatusOK)
+	}
 }
 
 func marshalBody(body ResponseBody) []byte {

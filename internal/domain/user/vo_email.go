@@ -1,23 +1,21 @@
 package user
 
 import (
-	"errors"
 	"fmt"
 	"net/mail"
 	"regexp"
+
+	domainerrors "github.com/mansonxasthur/go-task-api/internal/domain/errors"
 )
 
 var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
 
-var (
-	ErrorEmailIsRequired    = errors.New(`email is required`)
-	ErrorInvalidEmailFormat = errors.New(`invalid email format`)
-)
-
+// Email is the email value object.
 type Email struct {
 	Value string
 }
 
+// NewEmail creates a new email value object.
 func NewEmail(value string) (*Email, error) {
 	if err := validateEmail(value); err != nil {
 		return nil, err
@@ -27,13 +25,14 @@ func NewEmail(value string) (*Email, error) {
 	}, nil
 }
 
+// validateEmail validates the email value.
 func validateEmail(v string) error {
 	if v == "" {
-		return ErrorEmailIsRequired
+		return domainerrors.ErrorEmailIsRequired
 	}
 
 	if !emailRegex.MatchString(v) {
-		return ErrorInvalidEmailFormat
+		return domainerrors.ErrorInvalidEmailFormat
 	}
 
 	_, err := mail.ParseAddress(v)
@@ -44,6 +43,7 @@ func validateEmail(v string) error {
 	return nil
 }
 
+// String returns the email value.
 func (e *Email) String() string {
 	return e.Value
 }

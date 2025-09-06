@@ -22,7 +22,7 @@ func TestRegisterUserCommand_Success(t *testing.T) {
 			Email: "mansonx13@gmail.com",
 		},
 		{
-			Name:  "Xastur",
+			Name:  "Xasthur",
 			Email: "mansonxasthur@gmail.com",
 		},
 	}

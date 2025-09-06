@@ -9,6 +9,7 @@ import (
 	"github.com/mansonxasthur/go-task-api/pkg/helpers"
 )
 
+// UserMemoryRepository is the user memory repository.
 type UserMemoryRepository struct {
 	mu         sync.RWMutex
 	Users      map[user.ID]user.User
@@ -16,6 +17,7 @@ type UserMemoryRepository struct {
 	lastID     user.ID
 }
 
+// NewUserMemoryRepository creates a new user memory repository.
 func NewUserMemoryRepository() *UserMemoryRepository {
 	return &UserMemoryRepository{
 		Users:      make(map[user.ID]user.User),
@@ -24,6 +26,7 @@ func NewUserMemoryRepository() *UserMemoryRepository {
 	}
 }
 
+// Create creates a new user.
 func (r *UserMemoryRepository) Create(ctx context.Context, u *user.User) (user.ID, error) {
 	if err := ctx.Err(); err != nil {
 		return 0, err
@@ -42,6 +45,7 @@ func (r *UserMemoryRepository) Create(ctx context.Context, u *user.User) (user.I
 	return u.ID, nil
 }
 
+// FindByID finds a user by ID.
 func (r *UserMemoryRepository) FindByID(ctx context.Context, id user.ID) (*user.User, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -52,12 +56,13 @@ func (r *UserMemoryRepository) FindByID(ctx context.Context, id user.ID) (*user.
 
 	u, ok := r.Users[id]
 	if !ok {
-		return nil, errors.ErrUserNotFound
+		return nil, errors.ErrorUserNotFound
 	}
 
 	return &u, nil
 }
 
+// FindByEmail finds a user by email.
 func (r *UserMemoryRepository) FindByEmail(ctx context.Context, email string) (*user.User, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -68,12 +73,13 @@ func (r *UserMemoryRepository) FindByEmail(ctx context.Context, email string) (*
 	email = helpers.NormalizeEmail(email)
 	id, ok := r.emailIndex[email]
 	if !ok {
-		return nil, errors.ErrUserNotFound
+		return nil, errors.ErrorUserNotFound
 	}
 
 	return r.FindByID(ctx, id)
 }
 
+// All returns all users.
 func (r *UserMemoryRepository) All(ctx context.Context) []*user.User {
 	if err := ctx.Err(); err != nil {
 		return []*user.User{}
